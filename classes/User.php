@@ -66,6 +66,43 @@ class User {
         return $stmt->fetchAll();
     }
 
+    public function getById(int $id): ?array {
+        $stmt = $this->db->prepare("SELECT idUser, naam, email, rol FROM users WHERE idUser = ?");
+        $stmt->execute([$id]);
+        $user = $stmt->fetch();
+        return $user ?: null;
+    }
+
+    public function update(int $id, string $name, string $email, string $role): array {
+        $errors = [];
+        if (empty($name)) $errors['name'] = 'Naam is verplicht.';
+        if (empty($email)) {
+            $errors['email'] = 'E-mailadres is verplicht.';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Voer een geldig e-mailadres in.';
+        } elseif ($this->emailExistsForOther($email, $id)) {
+            $errors['email'] = 'Dit e-mailadres is al in gebruik door een andere gebruiker.';
+        }
+        if (!in_array($role, ['admin', 'gebruiker'], true)) {
+            $errors['rol'] = 'Ongeldige rol.';
+        }
+
+        if (!empty($errors)) {
+            return ['success' => false, 'errors' => $errors];
+        }
+
+        $stmt = $this->db->prepare("UPDATE users SET naam = ?, email = ?, rol = ? WHERE idUser = ?");
+        $stmt->execute([$name, $email, $role, $id]);
+
+        return ['success' => true];
+    }
+
+    private function emailExistsForOther(string $email, int $excludeId): bool {
+        $stmt = $this->db->prepare("SELECT idUser FROM users WHERE email = ? AND idUser != ?");
+        $stmt->execute([$email, $excludeId]);
+        return (bool) $stmt->fetch();
+    }
+
     private function emailExists(string $email): bool {
         $stmt = $this->db->prepare("SELECT idUser FROM users WHERE email = ?");
         $stmt->execute([$email]);

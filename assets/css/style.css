@@ -328,3 +328,7 @@ a:hover {
     background: #e3f2fd;
     color: #1565c0;
 }
+
+.edit-form {
+    margin: 0 auto;
+}

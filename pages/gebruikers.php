@@ -34,6 +34,10 @@ $users = $userModel->getAll($search, $roleFilter);
         <a href="admin_dashboard.php" class="btn-logout">Terug naar dashboard</a>
     </header>
 
+    <?php if (isset($_GET['updated'])): ?>
+        <p class="success">Gebruiker succesvol bijgewerkt.</p>
+    <?php endif; ?>
+
     <form method="GET" class="filter-bar">
         <input type="text" name="search" placeholder="Zoek op naam of e-mail" value="<?= htmlspecialchars($search) ?>">
         <select name="rol">
@@ -53,6 +57,7 @@ $users = $userModel->getAll($search, $roleFilter);
                     <th>Naam</th>
                     <th>E-mailadres</th>
                     <th>Rol</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -61,6 +66,7 @@ $users = $userModel->getAll($search, $roleFilter);
                         <td><?= htmlspecialchars($user['naam']) ?></td>
                         <td><?= htmlspecialchars($user['email']) ?></td>
                         <td><span class="role-badge role-<?= $user['rol'] ?>"><?= ucfirst($user['rol']) ?></span></td>
+                        <td><a href="gebruiker_bewerken.php?id=<?= $user['idUser'] ?>">Bewerken</a></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
