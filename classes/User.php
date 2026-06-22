@@ -44,6 +44,28 @@ class User {
         return ['success' => true, 'role' => $user['rol']];
     }
 
+    public function getAll(string $search = '', string $roleFilter = ''): array {
+        $sql = "SELECT idUser, naam, email, rol FROM users WHERE 1=1";
+        $params = [];
+
+        if ($search !== '') {
+            $sql .= " AND (naam LIKE ? OR email LIKE ?)";
+            $params[] = "%$search%";
+            $params[] = "%$search%";
+        }
+
+        if ($roleFilter !== '') {
+            $sql .= " AND rol = ?";
+            $params[] = $roleFilter;
+        }
+
+        $sql .= " ORDER BY naam ASC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
     private function emailExists(string $email): bool {
         $stmt = $this->db->prepare("SELECT idUser FROM users WHERE email = ?");
         $stmt->execute([$email]);
