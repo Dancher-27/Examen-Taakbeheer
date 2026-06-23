@@ -50,6 +50,7 @@ $tasks = $taskModel->getForUser($_SESSION['user_id'], $sort);
                     <th>Status</th>
                     <th>Categorie</th>
                     <th>Deadline</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -66,6 +67,7 @@ $tasks = $taskModel->getForUser($_SESSION['user_id'], $sort);
                             <?php endif; ?>
                         </td>
                         <td><?= $task['deadline'] ? (new DateTime($task['deadline']))->format('d-m-Y') : '-' ?></td>
+                        <td><a href="taak_details.php?id=<?= $task['idTask'] ?>">Details</a></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
