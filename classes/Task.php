@@ -118,4 +118,47 @@ class Task {
         $stmt = $this->db->query("SELECT idCategory, naam FROM categories ORDER BY naam ASC");
         return $stmt->fetchAll();
     }
+
+    public function getById(int $taskId): ?array {
+        $stmt = $this->db->prepare("
+            SELECT t.idTask, t.titel, t.beschrijving, t.prioriteit, t.status, t.deadline,
+                   c.naam AS categorie_naam, c.kleurcode
+            FROM tasks t
+            LEFT JOIN categories c ON t.Category_idCategory = c.idCategory
+            WHERE t.idTask = ?
+        ");
+        $stmt->execute([$taskId]);
+        $task = $stmt->fetch();
+        return $task ?: null;
+    }
+
+    public function getAssignedUsers(int $taskId): array {
+        $stmt = $this->db->prepare("
+            SELECT u.idUser, u.naam
+            FROM task_user tu
+            INNER JOIN users u ON tu.User_idUser = u.idUser
+            WHERE tu.Task_idTask = ?
+            ORDER BY u.naam ASC
+        ");
+        $stmt->execute([$taskId]);
+        return $stmt->fetchAll();
+    }
+
+    public function isAssignedToUser(int $taskId, int $userId): bool {
+        $stmt = $this->db->prepare("SELECT 1 FROM task_user WHERE Task_idTask = ? AND User_idUser = ?");
+        $stmt->execute([$taskId, $userId]);
+        return (bool) $stmt->fetch();
+    }
+
+    public function getProgressUpdates(int $taskId): array {
+        $stmt = $this->db->prepare("
+            SELECT tp.idTaskProgress, tp.beschrijving, tp.created_at, u.naam AS gebruiker_naam
+            FROM task_progress tp
+            INNER JOIN users u ON tp.User_idUser = u.idUser
+            WHERE tp.Task_idTask = ?
+            ORDER BY tp.created_at ASC
+        ");
+        $stmt->execute([$taskId]);
+        return $stmt->fetchAll();
+    }
 }
