@@ -332,3 +332,34 @@ a:hover {
 .edit-form {
     margin: 0 auto;
 }
+
+/* Takenoverzicht */
+.status-badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.status-open {
+    background: #eceff1;
+    color: #455a64;
+}
+
+.status-in_progress {
+    background: #fff8e1;
+    color: #f9a825;
+}
+
+.status-done {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.category-tag {
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    color: #fff;
+    font-weight: bold;
+}
