@@ -178,7 +178,7 @@ class Task {
     public function getById(int $taskId): ?array {
         $stmt = $this->db->prepare("
             SELECT t.idTask, t.titel, t.beschrijving, t.prioriteit, t.status, t.deadline,
-                   c.naam AS categorie_naam, c.kleurcode
+                   t.Category_idCategory, c.naam AS categorie_naam, c.kleurcode
             FROM tasks t
             LEFT JOIN categories c ON t.Category_idCategory = c.idCategory
             WHERE t.idTask = ?
@@ -186,6 +186,53 @@ class Task {
         $stmt->execute([$taskId]);
         $task = $stmt->fetch();
         return $task ?: null;
+    }
+
+    public function update(int $taskId, array $data, int $userId, bool $isAdmin): array {
+        $errors = [];
+        if (empty($data['titel'])) {
+            $errors['titel'] = 'Titel is verplicht.';
+        }
+        if (empty($data['prioriteit']) || !in_array($data['prioriteit'], ['laag', 'gemiddeld', 'hoog'], true)) {
+            $errors['prioriteit'] = 'Kies een geldige prioriteit.';
+        }
+        if (empty($data['status']) || !in_array($data['status'], ['open', 'in_progress', 'done'], true)) {
+            $errors['status'] = 'Kies een geldige status.';
+        }
+        if ($isAdmin && empty($data['gebruikers'])) {
+            $errors['gebruikers'] = 'Selecteer minstens één gebruiker.';
+        }
+
+        if (!empty($errors)) {
+            return ['success' => false, 'errors' => $errors];
+        }
+
+        $stmt = $this->db->prepare("
+            UPDATE tasks
+            SET titel = ?, beschrijving = ?, prioriteit = ?, status = ?, deadline = ?, Category_idCategory = ?
+            WHERE idTask = ?
+        ");
+        $stmt->execute([
+            $data['titel'],
+            $data['beschrijving'] !== '' ? $data['beschrijving'] : null,
+            $data['prioriteit'],
+            $data['status'],
+            $data['deadline'] !== '' ? $data['deadline'] : null,
+            $data['categorie'] !== '' ? $data['categorie'] : null,
+            $taskId,
+        ]);
+
+        if ($isAdmin) {
+            $this->db->prepare("DELETE FROM task_user WHERE Task_idTask = ?")->execute([$taskId]);
+            $assignStmt = $this->db->prepare("INSERT INTO task_user (Task_idTask, User_idUser) VALUES (?, ?)");
+            foreach ($data['gebruikers'] as $assignedId) {
+                $assignStmt->execute([$taskId, (int) $assignedId]);
+            }
+        }
+
+        $this->logActivity($userId, 'bewerkt', 'taak', $taskId);
+
+        return ['success' => true];
     }
 
     public function getAssignedUsers(int $taskId): array {
