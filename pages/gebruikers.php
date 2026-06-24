@@ -40,6 +40,12 @@ $users = $userModel->getAll($search, $roleFilter);
     <?php if (isset($_GET['created'])): ?>
         <p class="success">Gebruiker succesvol aangemaakt.</p>
     <?php endif; ?>
+    <?php if (isset($_GET['deleted'])): ?>
+        <p class="success">Gebruiker succesvol verwijderd.</p>
+    <?php endif; ?>
+    <?php if (isset($_GET['error'])): ?>
+        <p class="error"><?= htmlspecialchars($_GET['error']) ?></p>
+    <?php endif; ?>
 
     <a href="gebruiker_aanmaken.php" class="btn-primary" style="margin-bottom: 1.5rem; display: inline-block;">+ Nieuwe gebruiker aanmaken</a>
 
@@ -71,7 +77,12 @@ $users = $userModel->getAll($search, $roleFilter);
                         <td><?= htmlspecialchars($user['naam']) ?></td>
                         <td><?= htmlspecialchars($user['email']) ?></td>
                         <td><span class="role-badge role-<?= $user['rol'] ?>"><?= ucfirst($user['rol']) ?></span></td>
-                        <td><a href="gebruiker_bewerken.php?id=<?= $user['idUser'] ?>">Bewerken</a></td>
+                        <td>
+                            <a href="gebruiker_bewerken.php?id=<?= $user['idUser'] ?>">Bewerken</a>
+                            <?php if ($user['idUser'] != $_SESSION['user_id']): ?>
+                                | <a href="gebruiker_verwijderen.php?id=<?= $user['idUser'] ?>" onclick="return confirm('Weet je zeker dat je deze gebruiker wilt verwijderen?')">Verwijderen</a>
+                            <?php endif; ?>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
