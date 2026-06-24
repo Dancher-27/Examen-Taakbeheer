@@ -44,6 +44,8 @@ $categories = $categoryModel->getAll();
                 <tr>
                     <th>Naam</th>
                     <th>Kleur</th>
+                    <th>Aantal taken</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -51,6 +53,11 @@ $categories = $categoryModel->getAll();
                     <tr>
                         <td><?= htmlspecialchars($cat['naam']) ?></td>
                         <td><span class="category-tag" style="background: <?= htmlspecialchars($cat['kleurcode']) ?>;"><?= htmlspecialchars($cat['kleurcode']) ?></span></td>
+                        <td><?= (int) $cat['taken_count'] ?></td>
+                        <td>
+                            <a href="categorie_bewerken.php?id=<?= $cat['idCategory'] ?>">Bewerken</a>
+                            | <a href="categorie_verwijderen.php?id=<?= $cat['idCategory'] ?>" onclick="return confirm('Weet je zeker dat je deze categorie wilt verwijderen?')">Verwijderen</a>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
