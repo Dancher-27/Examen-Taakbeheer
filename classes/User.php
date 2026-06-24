@@ -27,6 +27,28 @@ class User {
         return ['success' => true];
     }
 
+    public function create(string $name, string $email, string $password, string $role): array {
+        $errors = $this->validateFields($name, $email, $password);
+
+        if (!in_array($role, ['admin', 'gebruiker'], true)) {
+            $errors['rol'] = 'Ongeldige rol.';
+        }
+
+        if (!empty($errors)) {
+            return ['success' => false, 'errors' => $errors];
+        }
+
+        if ($this->emailExists($email)) {
+            return ['success' => false, 'errors' => ['email' => 'Dit e-mailadres is al in gebruik.']];
+        }
+
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+        $stmt = $this->db->prepare("INSERT INTO users (naam, email, wachtwoord_hash, rol) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$name, $email, $hash, $role]);
+
+        return ['success' => true];
+    }
+
     public function login(string $email, string $password): array {
         $stmt = $this->db->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->execute([$email]);
