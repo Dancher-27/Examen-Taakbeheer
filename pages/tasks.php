@@ -35,10 +35,10 @@ $categories = $taskModel->getCategories();
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="dashboard-body">
+<?php include __DIR__ . '/../partials/navbar.php'; ?>
 <div class="dashboard-container">
     <header class="dashboard-header">
         <h1>Mijn taken</h1>
-        <a href="dashboard.php" class="btn-logout">Terug naar dashboard</a>
     </header>
 
     <?php if (isset($_GET['created'])): ?>
