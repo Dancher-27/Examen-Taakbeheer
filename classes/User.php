@@ -6,6 +6,20 @@ class User {
         $this->db = $db;
     }
 
+    public function getMostActive(int $limit = 5): array {
+        $stmt = $this->db->prepare("
+            SELECT u.idUser, u.naam, COUNT(a.idActivityLog) AS aantal_acties
+            FROM users u
+            INNER JOIN activity_log a ON a.User_idUser = u.idUser
+            GROUP BY u.idUser
+            ORDER BY aantal_acties DESC
+            LIMIT ?
+        ");
+        $stmt->bindValue(1, $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
     public function register(string $name, string $email, string $password): array {
         if (empty($name) || empty($email) || empty($password)) {
             return ['success' => false, 'errors' => $this->validateFields($name, $email, $password)];
