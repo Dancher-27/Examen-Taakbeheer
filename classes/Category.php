@@ -7,7 +7,13 @@ class Category {
     }
 
     public function getAll(): array {
-        $stmt = $this->db->query("SELECT idCategory, naam, kleurcode FROM categories ORDER BY naam ASC");
+        $stmt = $this->db->query("
+            SELECT c.idCategory, c.naam, c.kleurcode, COUNT(t.idTask) AS taken_count
+            FROM categories c
+            LEFT JOIN tasks t ON t.Category_idCategory = c.idCategory
+            GROUP BY c.idCategory
+            ORDER BY c.naam ASC
+        ");
         return $stmt->fetchAll();
     }
 
