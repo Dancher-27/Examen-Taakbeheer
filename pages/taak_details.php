@@ -43,6 +43,10 @@ $progressUpdates = $taskModel->getProgressUpdates($taskId);
         <a href="<?= $backUrl ?>" class="btn-logout">Terug naar overzicht</a>
     </header>
 
+    <?php if (isset($_GET['updated'])): ?>
+        <p class="success">Taak succesvol bijgewerkt.</p>
+    <?php endif; ?>
+
     <div class="dashboard-grid">
         <div class="card">
             <h2>Taakinformatie</h2>
