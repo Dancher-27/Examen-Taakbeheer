@@ -37,6 +37,11 @@ $users = $userModel->getAll($search, $roleFilter);
     <?php if (isset($_GET['updated'])): ?>
         <p class="success">Gebruiker succesvol bijgewerkt.</p>
     <?php endif; ?>
+    <?php if (isset($_GET['created'])): ?>
+        <p class="success">Gebruiker succesvol aangemaakt.</p>
+    <?php endif; ?>
+
+    <a href="gebruiker_aanmaken.php" class="btn-primary" style="margin-bottom: 1.5rem; display: inline-block;">+ Nieuwe gebruiker aanmaken</a>
 
     <form method="GET" class="filter-bar">
         <input type="text" name="search" placeholder="Zoek op naam of e-mail" value="<?= htmlspecialchars($search) ?>">
