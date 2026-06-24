@@ -95,6 +95,20 @@ class User {
         return $user ?: null;
     }
 
+    public function delete(int $id, int $currentAdminId): array {
+        if ($id === $currentAdminId) {
+            return ['success' => false, 'error' => 'Je kunt jezelf niet verwijderen.'];
+        }
+
+        $this->db->prepare("DELETE FROM task_user WHERE User_idUser = ?")->execute([$id]);
+        $this->db->prepare("UPDATE tasks SET User_idUser = ? WHERE User_idUser = ?")->execute([$currentAdminId, $id]);
+        $this->db->prepare("DELETE FROM task_progress WHERE User_idUser = ?")->execute([$id]);
+        $this->db->prepare("DELETE FROM activity_log WHERE User_idUser = ?")->execute([$id]);
+        $this->db->prepare("DELETE FROM users WHERE idUser = ?")->execute([$id]);
+
+        return ['success' => true];
+    }
+
     public function update(int $id, string $name, string $email, string $role): array {
         $errors = [];
         if (empty($name)) $errors['name'] = 'Naam is verplicht.';
