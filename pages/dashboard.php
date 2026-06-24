@@ -38,10 +38,10 @@ $urgentTasks = $stmt->fetchAll();
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="dashboard-body">
+<?php include __DIR__ . '/../partials/navbar.php'; ?>
 <div class="dashboard-container">
     <header class="dashboard-header">
         <h1>Welkom, <?= htmlspecialchars($_SESSION['user_name']) ?></h1>
-        <a href="logout.php" class="btn-logout">Uitloggen</a>
     </header>
 
     <div class="dashboard-grid">

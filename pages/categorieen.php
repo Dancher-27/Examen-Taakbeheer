@@ -24,10 +24,10 @@ $categories = $categoryModel->getAll();
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="dashboard-body">
+<?php include __DIR__ . '/../partials/navbar.php'; ?>
 <div class="dashboard-container">
     <header class="dashboard-header">
         <h1>Categoriebeheer</h1>
-        <a href="admin_dashboard.php" class="btn-logout">Terug naar dashboard</a>
     </header>
 
     <?php if (isset($_GET['created'])): ?>

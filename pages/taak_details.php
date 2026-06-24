@@ -48,6 +48,7 @@ $progressUpdates = $taskModel->getProgressUpdates($taskId);
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body class="dashboard-body">
+<?php include __DIR__ . '/../partials/navbar.php'; ?>
 <div class="dashboard-container">
     <header class="dashboard-header">
         <h1><?= htmlspecialchars($task['titel']) ?></h1>
