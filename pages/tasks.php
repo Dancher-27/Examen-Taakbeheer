@@ -32,6 +32,12 @@ $tasks = $taskModel->getForUser($_SESSION['user_id'], $sort);
         <a href="dashboard.php" class="btn-logout">Terug naar dashboard</a>
     </header>
 
+    <?php if (isset($_GET['created'])): ?>
+        <p class="success">Taak succesvol aangemaakt.</p>
+    <?php endif; ?>
+
+    <a href="taak_aanmaken_gebruiker.php" class="btn-primary" style="margin-bottom: 1.5rem; display: inline-block;">+ Nieuwe taak aanmaken</a>
+
     <form method="GET" class="filter-bar">
         <select name="sort" onchange="this.form.submit()">
             <option value="deadline" <?= $sort === 'deadline' ? 'selected' : '' ?>>Sorteer op deadline</option>

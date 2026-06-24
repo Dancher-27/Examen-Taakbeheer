@@ -68,6 +68,41 @@ class Task {
         return ['success' => true];
     }
 
+    public function createForSelf(array $data, int $userId): array {
+        $errors = [];
+        if (empty($data['titel'])) {
+            $errors['titel'] = 'Titel is verplicht.';
+        }
+        if (empty($data['prioriteit']) || !in_array($data['prioriteit'], ['laag', 'gemiddeld', 'hoog'], true)) {
+            $errors['prioriteit'] = 'Kies een geldige prioriteit.';
+        }
+
+        if (!empty($errors)) {
+            return ['success' => false, 'errors' => $errors];
+        }
+
+        $stmt = $this->db->prepare("
+            INSERT INTO tasks (titel, beschrijving, prioriteit, status, deadline, Category_idCategory, User_idUser)
+            VALUES (?, ?, ?, 'open', ?, ?, ?)
+        ");
+        $stmt->execute([
+            $data['titel'],
+            $data['beschrijving'] !== '' ? $data['beschrijving'] : null,
+            $data['prioriteit'],
+            $data['deadline'] !== '' ? $data['deadline'] : null,
+            $data['categorie'] !== '' ? $data['categorie'] : null,
+            $userId,
+        ]);
+        $taskId = (int) $this->db->lastInsertId();
+
+        $stmt = $this->db->prepare("INSERT INTO task_user (Task_idTask, User_idUser) VALUES (?, ?)");
+        $stmt->execute([$taskId, $userId]);
+
+        $this->logActivity($userId, 'aangemaakt', 'taak', $taskId);
+
+        return ['success' => true];
+    }
+
     private function logActivity(int $userId, string $actie, string $entiteit, int $entiteitId): void {
         $stmt = $this->db->prepare("INSERT INTO activity_log (actie, entiteit, entiteit_id, User_idUser) VALUES (?, ?, ?, ?)");
         $stmt->execute([$actie, $entiteit, $entiteitId, $userId]);
