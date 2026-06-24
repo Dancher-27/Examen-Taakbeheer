@@ -6,6 +6,23 @@ class Task {
         $this->db = $db;
     }
 
+    public function getStatusCounts(): array {
+        $stmt = $this->db->query("SELECT status, COUNT(*) AS aantal FROM tasks GROUP BY status");
+        $counts = ['open' => 0, 'in_progress' => 0, 'done' => 0];
+        foreach ($stmt->fetchAll() as $row) {
+            $counts[$row['status']] = (int) $row['aantal'];
+        }
+        return $counts;
+    }
+
+    public function getOverdueCount(): int {
+        $stmt = $this->db->query("
+            SELECT COUNT(*) AS aantal FROM tasks
+            WHERE deadline < CURDATE() AND status != 'done'
+        ");
+        return (int) $stmt->fetch()['aantal'];
+    }
+
     public function getForUser(int $userId, array $filters = [], string $sort = 'deadline'): array {
         $orderBy = $sort === 'prioriteit'
             ? "FIELD(t.prioriteit, 'hoog', 'gemiddeld', 'laag')"
