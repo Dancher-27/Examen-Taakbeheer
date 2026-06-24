@@ -264,4 +264,15 @@ class Task {
         $stmt->execute([$taskId]);
         return $stmt->fetchAll();
     }
+
+    public function addProgressUpdate(int $taskId, int $userId, string $description): array {
+        if (trim($description) === '') {
+            return ['success' => false, 'error' => 'Beschrijving is verplicht.'];
+        }
+
+        $stmt = $this->db->prepare("INSERT INTO task_progress (beschrijving, Task_idTask, User_idUser) VALUES (?, ?, ?)");
+        $stmt->execute([trim($description), $taskId, $userId]);
+
+        return ['success' => true];
+    }
 }

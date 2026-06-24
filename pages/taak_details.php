@@ -21,9 +21,20 @@ if (!$task) {
     exit;
 }
 
-if (!$isAdmin && !$taskModel->isAssignedToUser($taskId, $_SESSION['user_id'])) {
+$hasAccess = $isAdmin || $taskModel->isAssignedToUser($taskId, $_SESSION['user_id']);
+if (!$hasAccess) {
     header('Location: login.php?error=geen_toegang');
     exit;
+}
+
+$progressError = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['voortgang_beschrijving'])) {
+    $result = $taskModel->addProgressUpdate($taskId, $_SESSION['user_id'], $_POST['voortgang_beschrijving']);
+    if ($result['success']) {
+        header("Location: taak_details.php?id=$taskId");
+        exit;
+    }
+    $progressError = $result['error'];
 }
 
 $assignedUsers = $taskModel->getAssignedUsers($taskId);
@@ -89,6 +100,17 @@ $progressUpdates = $taskModel->getProgressUpdates($taskId);
                     <?php endforeach; ?>
                 </ul>
             <?php endif; ?>
+
+            <form method="POST" class="progress-form">
+                <div class="form-group">
+                    <label for="voortgang_beschrijving">Nieuwe update</label>
+                    <textarea id="voortgang_beschrijving" name="voortgang_beschrijving" rows="3" placeholder="Beschrijf je voortgang..."></textarea>
+                    <?php if ($progressError): ?>
+                        <span class="error"><?= htmlspecialchars($progressError) ?></span>
+                    <?php endif; ?>
+                </div>
+                <button type="submit" class="btn-primary">Update plaatsen</button>
+            </form>
         </div>
     </div>
 </div>
