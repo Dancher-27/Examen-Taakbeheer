@@ -468,3 +468,17 @@ a:hover {
     font-size: 0.95rem;
     font-family: inherit;
 }
+
+
+.urgency-high [data-deadline] {
+    font-weight: bold;
+    color: #e53935;
+}
+
+.urgency-medium [data-deadline] {
+    color: #f9a825;
+}
+
+.urgency-low [data-deadline] {
+    color: #2e7d32;
+}

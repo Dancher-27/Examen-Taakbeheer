@@ -100,7 +100,7 @@ $categories = $taskModel->getCategories();
             </thead>
             <tbody>
                 <?php foreach ($tasks as $task): ?>
-                    <tr>
+                    <tr data-task class="<?php echo Task::getUrgencyByDeadline($task['deadline']); ?>">
                         <td><?= htmlspecialchars($task['titel']) ?></td>
                         <td><span class="prio-<?= $task['prioriteit'] ?>"><?= ucfirst($task['prioriteit']) ?></span></td>
                         <td><span class="status-badge status-<?= $task['status'] ?>"><?= ucfirst(str_replace('_', ' ', $task['status'])) ?></span></td>
@@ -111,7 +111,7 @@ $categories = $taskModel->getCategories();
                                 <span class="no-items">Geen categorie</span>
                             <?php endif; ?>
                         </td>
-                        <td><?= $task['deadline'] ? (new DateTime($task['deadline']))->format('d-m-Y') : '-' ?></td>
+                        <td data-deadline><?= $task['deadline'] ? (new DateTime($task['deadline']))->format('d-m-Y') : '-' ?></td>
                         <td><a href="taak_details.php?id=<?= $task['idTask'] ?>">Details</a></td>
                     </tr>
                 <?php endforeach; ?>
@@ -119,5 +119,63 @@ $categories = $taskModel->getCategories();
         </table>
     <?php endif; ?>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    function getDeadlineValue(el) {
+        return el.textContent.trim();
+    }
+
+    function parseDmy(dateStr) {
+        const [day, month, year] = dateStr.split('-').map(Number);
+        return new Date(year, month - 1, day);
+    }
+
+    function daysBetween(today, deadline) {
+        const msPerDay = 1000 * 60 * 60 * 24;
+        return Math.round((deadline - today) / msPerDay);
+    }
+
+    function updateUrgencyClasses() {
+        const taskElements = document.querySelectorAll('[data-task]');
+
+        taskElements.forEach(function (taskEl) {
+            const deadlineEl = taskEl.querySelector('[data-deadline]');
+            if (!deadlineEl) {
+                return;
+            }
+
+            const deadlineValue = getDeadlineValue(deadlineEl);
+            if (deadlineValue === '-') {
+                taskEl.removeAttribute('class');
+                return;
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const deadlineDate = parseDmy(deadlineValue);
+            deadlineDate.setHours(0, 0, 0, 0);
+
+            const diff = daysBetween(today, deadlineDate);
+
+            if (diff <= 0) {
+                taskEl.className = 'urgency-high';
+                return;
+            }
+
+            if (diff < 3) {
+                taskEl.className = 'urgency-medium';
+            }
+
+            else {
+                taskEl.className = 'urgency-low';
+            }
+        });
+    }
+
+    updateUrgencyClasses();
+    setInterval(updateUrgencyClasses, 60 * 60 * 1000);
+});
+</script>
 </body>
 </html>
