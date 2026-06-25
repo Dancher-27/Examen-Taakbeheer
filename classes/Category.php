@@ -40,7 +40,7 @@ class Category {
     }
 
     public function update(int $id, string $name, string $colorCode): array {
-        $errors = $this->validate($name, $colorCode);
+        $errors = $this->validate($name, $colorCode, $id);
         if (!empty($errors)) {
             return ['success' => false, 'errors' => $errors];
         }
@@ -61,12 +61,12 @@ class Category {
         return $stmt->execute([$id]);
     }
 
-    private function validate(string $name, string $colorCode) : array {
+    private function validate(string $name, string $colorCode, ?int $excludeId = null): array {
         $errors = [];
 
         if (empty($name)) {
             $errors['naam'] = 'Naam is verplicht.';
-        } elseif ($this->nameExists($name)) {
+        } elseif ($this->nameExists($name, $excludeId)) {
             $errors['naam'] = 'Deze categorienaam bestaat al.';
         }
 
@@ -77,10 +77,17 @@ class Category {
         return $errors;
     }
 
+    private function nameExists(string $name, ?int $excludeId = null): bool {
+        $sql = "SELECT idCategory FROM categories WHERE naam = ?";
+        $params = [$name];
 
-    private function nameExists(string $name): bool {
-        $stmt = $this->db->prepare("SELECT idCategory FROM categories WHERE naam = ?");
-        $stmt->execute([$name]);
+        if ($excludeId !== null) {
+            $sql .= " AND idCategory != ?";
+            $params[] = $excludeId;
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         return (bool) $stmt->fetch();
     }
 }
