@@ -56,6 +56,11 @@ class Category {
         return ['success' => true];
     }
 
+    public function delete(int $id): bool {
+        $stmt = $this->db->prepare("DELETE FROM `categories` WHERE `idCategory` = ?");
+        return $stmt->execute([$id]);
+    }
+
     private function validate(string $name, string $colorCode) : array {
         $errors = [];
 

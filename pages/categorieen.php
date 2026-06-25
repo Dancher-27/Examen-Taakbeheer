@@ -28,12 +28,29 @@ $categories = $categoryModel->getAll();
 <div class="dashboard-container">
     <header class="dashboard-header">
         <h1>Categoriebeheer</h1>
+        <?php
+
+        if (isset($_GET['error'])) {
+            ?>
+            <span class="error"><?php
+                if($_GET['error'] == 'no_delete') {
+                    echo 'Categorie kon niet verwijderd worden.';
+                } else {
+                    echo 'Er is iets mis gegaan.';
+                }
+            ?></span>
+            <?php
+        }
+
+        ?>
     </header>
 
     <?php if (isset($_GET['created'])): ?>
         <p class="success">Categorie succesvol aangemaakt.</p>
     <?php elseif (isset($_GET['updated'])): ?>
         <p class="success">Categorie succesvol bewerkt.</p>
+    <?php elseif (isset($_GET['deleted'])): ?>
+        <p class="success">Categorie succesvol verwijderd.</p>
     <?php endif; ?>
 
     <a href="categorie_aanmaken.php" class="btn-primary" style="margin-bottom: 1.5rem; display: inline-block;">+ Nieuwe categorie aanmaken</a>
