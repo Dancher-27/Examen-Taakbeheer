@@ -262,6 +262,19 @@ class Task {
         return ['success' => true];
     }
 
+    public function updateStatus(int $taskId, string $status, int $userId): array {
+        if (!in_array($status, ['open', 'in_progress', 'done'], true)) {
+            return ['success' => false, 'errors' => ['status' => 'Kies een geldige status.']];
+        }
+
+        $stmt = $this->db->prepare("UPDATE tasks SET status = ? WHERE idTask = ?");
+        $stmt->execute([$status, $taskId]);
+
+        $this->logActivity($userId, 'bewerkt', 'taak', $taskId);
+
+        return ['success' => true];
+    }
+
     public function getAssignedUsers(int $taskId): array {
         $stmt = $this->db->prepare("
             SELECT u.idUser, u.naam
