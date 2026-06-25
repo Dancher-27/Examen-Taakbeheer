@@ -48,7 +48,7 @@ class ActivityLog {
         if(!$entry['entiteit_id']) { return ''; }
 
         if(!isset($this->entityMapping[$entry['entiteit']])) {
-            return "#" . $entiteit_id;
+            return "#" . $entry['entiteit_id'];
         }
 
         $args = $this->entityMapping[$entry['entiteit']];
@@ -60,7 +60,7 @@ class ActivityLog {
         $stmt->execute([$entry['entiteit_id']]);
         $entity = $stmt->fetch();
 
-        if(!$entity) { return "#" . $entiteit_id; }
+        if(!$entity) { return "#" .$entry['entiteit_id']; }
         return '"' . $entity['name'] . '"';
     }
 }
