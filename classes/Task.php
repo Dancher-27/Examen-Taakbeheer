@@ -205,7 +205,7 @@ class Task {
     public function getById(int $taskId): ?array {
         $stmt = $this->db->prepare("
             SELECT t.idTask, t.titel, t.beschrijving, t.prioriteit, t.status, t.deadline,
-                   t.Category_idCategory, c.naam AS categorie_naam, c.kleurcode
+                   t.Category_idCategory, t.User_idUser, c.naam AS categorie_naam, c.kleurcode
             FROM tasks t
             LEFT JOIN categories c ON t.Category_idCategory = c.idCategory
             WHERE t.idTask = ?

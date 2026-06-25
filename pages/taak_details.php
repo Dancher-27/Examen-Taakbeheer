@@ -37,6 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['voortgang_beschrijvin
     $progressError = $result['error'];
 }
 
+$isCreator = (int) $task['User_idUser'] === (int) $_SESSION['user_id'];
+$canDelete = $isAdmin || $isCreator;
+
 $assignedUsers = $taskModel->getAssignedUsers($taskId);
 $progressUpdates = $taskModel->getProgressUpdates($taskId);
 ?>
@@ -79,7 +82,7 @@ $progressUpdates = $taskModel->getProgressUpdates($taskId);
 
             <div class="task-actions">
                 <a href="taak_bewerken.php?id=<?= $task['idTask'] ?>" class="btn-primary">Bewerken</a>
-                <?php if ($isAdmin): ?>
+                <?php if ($canDelete): ?>
                     <a href="taak_verwijderen.php?id=<?= $task['idTask'] ?>" class="btn-logout" onclick="return confirm('Weet je zeker dat je deze taak wilt verwijderen?')">Verwijderen</a>
                 <?php endif; ?>
             </div>
