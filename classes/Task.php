@@ -302,4 +302,29 @@ class Task {
 
         return ['success' => true];
     }
+
+    public static function getUrgencyByDeadline($deadline): string {
+
+        // Task without deadline gets no urgency indicator
+        if(empty($deadline)) {
+            return '';
+        }
+
+        $dateDeadline = new DateTime($deadline);
+        $dateToday = new DateTime('today');
+        $dateDiff = $dateDeadline->diff($dateToday);
+
+        // If deadline has passed or is today, return high urgency value
+        if($dateDiff->invert == 0 || $dateDiff->days == 0) {
+            return 'urgency-high';
+        }
+
+        // If deadline is in less than three days, return medium urgency value
+        if($dateDiff->days < 3) {
+            return 'urgency-medium';
+        }
+
+        // In all other cases, return low urgency value
+        return 'urgency-low';
+    }
 }
