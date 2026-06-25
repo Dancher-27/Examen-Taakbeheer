@@ -14,18 +14,24 @@ require_once __DIR__ . '/../config/database.php';
 $db = (new Database())->getConnection();
 $userId = $_SESSION['user_id'];
 
-$stmt = $db->prepare("SELECT COUNT(*) AS total FROM tasks WHERE User_idUser = ? AND status != 'done'");
+$stmt = $db->prepare("
+    SELECT COUNT(*) AS total
+    FROM tasks t
+    INNER JOIN task_user tu ON tu.Task_idTask = t.idTask
+    WHERE tu.User_idUser = ? AND t.status != 'done'
+");
 $stmt->execute([$userId]);
 $openCount = $stmt->fetch()['total'];
 
 $stmt = $db->prepare("
-    SELECT titel, deadline, status, prioriteit
-    FROM tasks
-    WHERE User_idUser = ?
-      AND deadline IS NOT NULL
-      AND status != 'done'
-      AND deadline <= DATE_ADD(CURDATE(), INTERVAL 3 DAY)
-    ORDER BY deadline ASC
+    SELECT t.titel, t.deadline, t.status, t.prioriteit
+    FROM tasks t
+    INNER JOIN task_user tu ON tu.Task_idTask = t.idTask
+    WHERE tu.User_idUser = ?
+      AND t.deadline IS NOT NULL
+      AND t.status != 'done'
+      AND t.deadline <= DATE_ADD(CURDATE(), INTERVAL 3 DAY)
+    ORDER BY t.deadline ASC
 ");
 $stmt->execute([$userId]);
 $urgentTasks = $stmt->fetchAll();
@@ -45,7 +51,7 @@ $urgentTasks = $stmt->fetchAll();
     </header>
 
     <div class="dashboard-grid">
-        <div class="card">
+        <div class="card stat-card">
             <h2>Openstaande taken</h2>
             <p class="stat"><?= $openCount ?></p>
         </div>
