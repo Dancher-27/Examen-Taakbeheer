@@ -60,6 +60,9 @@ class User {
         $stmt = $this->db->prepare("INSERT INTO users (naam, email, wachtwoord_hash, rol) VALUES (?, ?, ?, ?)");
         $stmt->execute([$name, $email, $hash, $role]);
 
+        $id = (int) $this->db->lastInsertId();
+        $this->logActivity('aangemaakt', 'gebruiker', $id);
+
         return ['success' => true];
     }
 
@@ -102,6 +105,15 @@ class User {
         return $stmt->fetchAll();
     }
 
+    public function getAllPlucked() {
+        $userList = $this->getAll();
+        $result = [];
+        foreach($userList as $user) {
+            $result[$user['idUser']] = $user['naam'];
+        }
+        return $result;
+    }
+
     public function getById(int $id): ?array {
         $stmt = $this->db->prepare("SELECT idUser, naam, email, rol FROM users WHERE idUser = ?");
         $stmt->execute([$id]);
@@ -119,6 +131,8 @@ class User {
         $this->db->prepare("DELETE FROM task_progress WHERE User_idUser = ?")->execute([$id]);
         $this->db->prepare("DELETE FROM activity_log WHERE User_idUser = ?")->execute([$id]);
         $this->db->prepare("DELETE FROM users WHERE idUser = ?")->execute([$id]);
+
+        $this->logActivity('verwijderd', 'gebruiker', $id);
 
         return ['success' => true];
     }
@@ -143,6 +157,8 @@ class User {
 
         $stmt = $this->db->prepare("UPDATE users SET naam = ?, email = ?, rol = ? WHERE idUser = ?");
         $stmt->execute([$name, $email, $role, $id]);
+
+        $this->logActivity('bewerkt', 'gebruiker', $id);
 
         return ['success' => true];
     }
@@ -173,5 +189,16 @@ class User {
             $errors['password'] = 'Wachtwoord moet minimaal 8 tekens bevatten.';
         }
         return $errors;
+    }
+
+    private function logActivity(string $actie, string $entiteit, int $entiteitId): void {
+        if(!class_exists('ActivityLog')) {
+            include_once 'ActivityLog.php';
+        }
+
+        $userId = $_SESSION['user_id'];
+
+        $log = new ActivityLog($this->db);
+        $log->create($actie, $entiteit, $entiteitId, $userId);
     }
 }

@@ -101,7 +101,7 @@ class Task {
             $assignStmt->execute([$taskId, (int) $userId]);
         }
 
-        $this->logActivity($creatorId, 'aangemaakt', 'taak', $taskId);
+        $this->logActivity('aangemaakt', 'taak', $taskId);
 
         return ['success' => true];
     }
@@ -136,7 +136,7 @@ class Task {
         $stmt = $this->db->prepare("INSERT INTO task_user (Task_idTask, User_idUser) VALUES (?, ?)");
         $stmt->execute([$taskId, $userId]);
 
-        $this->logActivity($userId, 'aangemaakt', 'taak', $taskId);
+        $this->logActivity('aangemaakt', 'taak', $taskId);
 
         return ['success' => true];
     }
@@ -146,14 +146,18 @@ class Task {
         $this->db->prepare("DELETE FROM task_progress WHERE Task_idTask = ?")->execute([$taskId]);
         $this->db->prepare("DELETE FROM tasks WHERE idTask = ?")->execute([$taskId]);
 
-        $this->logActivity($userId, 'verwijderd', 'taak', $taskId);
+        $this->logActivity('verwijderd', 'taak', $taskId);
 
         return ['success' => true];
     }
 
-    private function logActivity(int $userId, string $actie, string $entiteit, int $entiteitId): void {
-        $stmt = $this->db->prepare("INSERT INTO activity_log (actie, entiteit, entiteit_id, User_idUser) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$actie, $entiteit, $entiteitId, $userId]);
+    private function logActivity(string $actie, string $entiteit, int $entiteitId): void {
+        if(!class_exists('ActivityLog')) {
+            include_once 'ActivityLog.php';
+        }
+        $userId = $_SESSION['user_id'];
+        $log = new ActivityLog($this->db);
+        $log->create($actie, $entiteit, $entiteitId, $userId);
     }
 
     public function getAllForAdmin(array $filters = []): array {
@@ -257,7 +261,7 @@ class Task {
             }
         }
 
-        $this->logActivity($userId, 'bewerkt', 'taak', $taskId);
+        $this->logActivity('bewerkt', 'taak', $taskId);
 
         return ['success' => true];
     }
