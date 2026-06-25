@@ -11,6 +11,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             <li><a href="categorieen.php" class="<?= $currentPage === 'categorieen.php' ? 'active' : '' ?>">Categorieën</a></li>
             <li><a href="projecten.php" class="<?= $currentPage === 'projecten.php' ? 'active' : '' ?>">Projecten</a></li>
             <li><a href="taken_admin.php" class="<?= $currentPage === 'taken_admin.php' ? 'active' : '' ?>">Taken</a></li>
+            <li><a href="activiteitenlog.php" class="<?= $currentPage === 'activiteitenlog.php' ? 'active' : '' ?>">Activiteitenlog</a></li>
         <?php else: ?>
             <li><a href="dashboard.php" class="<?= $currentPage === 'dashboard.php' ? 'active' : '' ?>">Dashboard</a></li>
             <li><a href="tasks.php" class="<?= $currentPage === 'tasks.php' ? 'active' : '' ?>">Mijn taken</a></li>

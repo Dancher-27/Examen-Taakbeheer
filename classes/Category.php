@@ -25,7 +25,9 @@ class Category {
 
         $stmt = $this->db->prepare("INSERT INTO categories (naam, kleurcode) VALUES (?, ?)");
         $stmt->execute([$name, $colorCode]);
+        $categoryId = $this->db->lastInsertId();
 
+        $this->logActivity('aangemaakt', 'categorie', $categoryId);
         return ['success' => true];
     }
 
@@ -39,8 +41,8 @@ class Category {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function update(int $id, string $name, string $colorCode): array {
-        $errors = $this->validate($name, $colorCode, $id);
+    public function update(int $categoryId, string $name, string $colorCode): array {
+        $errors = $this->validate($name, $colorCode, $categoryId);
         if (!empty($errors)) {
             return ['success' => false, 'errors' => $errors];
         }
@@ -51,14 +53,20 @@ class Category {
                 kleurcode = ?
             WHERE `idCategory` = ?
         ");
-        $stmt->execute([$name, $colorCode, $id]);
+        $stmt->execute([$name, $colorCode, $categoryId]);
+
+        $this->logActivity('bewerkt', 'categorie', $categoryId);
 
         return ['success' => true];
     }
 
-    public function delete(int $id): bool {
+    public function delete(int $categoryId): bool {
         $stmt = $this->db->prepare("DELETE FROM `categories` WHERE `idCategory` = ?");
-        return $stmt->execute([$id]);
+        $result = $stmt->execute([$categoryId]);
+
+        $this->logActivity('verwijderd', 'categorie', $categoryId);
+
+        return $result;
     }
 
     private function validate(string $name, string $colorCode, ?int $excludeId = null): array {
@@ -89,5 +97,15 @@ class Category {
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return (bool) $stmt->fetch();
+    }
+
+    private function logActivity(string $actie, string $entiteit, int $entiteitId): void {
+        if(!class_exists('ActivityLog')) {
+            include_once 'ActivityLog.php';
+        }
+
+        $userId = $_SESSION['user_id'];
+        $log = new ActivityLog($this->db);
+        $log->create($actie, $entiteit, $entiteitId, $userId);
     }
 }
