@@ -27,6 +27,9 @@ if (!$isAdmin && !$taskModel->isAssignedToUser($taskId, $_SESSION['user_id'])) {
     exit;
 }
 
+$isCreator = (int) $task['User_idUser'] === (int) $_SESSION['user_id'];
+$canEditAll = $isAdmin || $isCreator;
+
 $categories = $taskModel->getCategories();
 $assignedUsers = $taskModel->getAssignedUsers($taskId);
 $assignedIds = array_column($assignedUsers, 'idUser');
@@ -49,15 +52,20 @@ $formData = [
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $formData['titel'] = trim($_POST['titel'] ?? '');
-    $formData['beschrijving'] = trim($_POST['beschrijving'] ?? '');
-    $formData['prioriteit'] = $_POST['prioriteit'] ?? '';
-    $formData['status'] = $_POST['status'] ?? '';
-    $formData['deadline'] = $_POST['deadline'] ?? '';
-    $formData['categorie'] = $_POST['categorie'] ?? '';
-    $formData['gebruikers'] = $_POST['gebruikers'] ?? $assignedIds;
+    if ($canEditAll) {
+        $formData['titel'] = trim($_POST['titel'] ?? '');
+        $formData['beschrijving'] = trim($_POST['beschrijving'] ?? '');
+        $formData['prioriteit'] = $_POST['prioriteit'] ?? '';
+        $formData['status'] = $_POST['status'] ?? '';
+        $formData['deadline'] = $_POST['deadline'] ?? '';
+        $formData['categorie'] = $_POST['categorie'] ?? '';
+        $formData['gebruikers'] = $_POST['gebruikers'] ?? $assignedIds;
 
-    $result = $taskModel->update($taskId, $formData, $_SESSION['user_id'], $isAdmin);
+        $result = $taskModel->update($taskId, $formData, $_SESSION['user_id'], $isAdmin);
+    } else {
+        $formData['status'] = $_POST['status'] ?? '';
+        $result = $taskModel->updateStatus($taskId, $formData['status'], $_SESSION['user_id']);
+    }
 
     if ($result['success']) {
         header("Location: taak_details.php?id=$taskId&updated=1");
@@ -84,9 +92,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class="auth-container edit-form">
         <form method="POST" novalidate>
+            <?php if (!$canEditAll): ?>
+                <p class="no-items">Je bent alleen toegewezen aan deze taak — je kunt enkel de status aanpassen.</p>
+            <?php endif; ?>
+
             <div class="form-group">
                 <label for="titel">Titel</label>
-                <input type="text" id="titel" name="titel" value="<?= htmlspecialchars($formData['titel']) ?>">
+                <input type="text" id="titel" name="titel" value="<?= htmlspecialchars($formData['titel']) ?>" <?= $canEditAll ? '' : 'disabled' ?>>
                 <?php if (!empty($errors['titel'])): ?>
                     <span class="error"><?= htmlspecialchars($errors['titel']) ?></span>
                 <?php endif; ?>
@@ -94,12 +106,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="form-group">
                 <label for="beschrijving">Beschrijving</label>
-                <textarea id="beschrijving" name="beschrijving" rows="4"><?= htmlspecialchars($formData['beschrijving']) ?></textarea>
+                <textarea id="beschrijving" name="beschrijving" rows="4" <?= $canEditAll ? '' : 'disabled' ?>><?= htmlspecialchars($formData['beschrijving']) ?></textarea>
             </div>
 
             <div class="form-group">
                 <label for="prioriteit">Prioriteit</label>
-                <select id="prioriteit" name="prioriteit">
+                <select id="prioriteit" name="prioriteit" <?= $canEditAll ? '' : 'disabled' ?>>
                     <option value="laag" <?= $formData['prioriteit'] === 'laag' ? 'selected' : '' ?>>Laag</option>
                     <option value="gemiddeld" <?= $formData['prioriteit'] === 'gemiddeld' ? 'selected' : '' ?>>Gemiddeld</option>
                     <option value="hoog" <?= $formData['prioriteit'] === 'hoog' ? 'selected' : '' ?>>Hoog</option>
@@ -123,7 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="form-group">
                 <label for="categorie">Categorie</label>
-                <select id="categorie" name="categorie">
+                <select id="categorie" name="categorie" <?= $canEditAll ? '' : 'disabled' ?>>
                     <option value="">Geen categorie</option>
                     <?php foreach ($categories as $cat): ?>
                         <option value="<?= $cat['idCategory'] ?>" <?= $formData['categorie'] == $cat['idCategory'] ? 'selected' : '' ?>>
@@ -135,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="form-group">
                 <label for="deadline">Deadline</label>
-                <input type="date" id="deadline" name="deadline" value="<?= htmlspecialchars($formData['deadline']) ?>">
+                <input type="date" id="deadline" name="deadline" value="<?= htmlspecialchars($formData['deadline']) ?>" <?= $canEditAll ? '' : 'disabled' ?>>
             </div>
 
             <?php if ($isAdmin): ?>
