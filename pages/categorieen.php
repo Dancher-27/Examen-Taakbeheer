@@ -32,6 +32,8 @@ $categories = $categoryModel->getAll();
 
     <?php if (isset($_GET['created'])): ?>
         <p class="success">Categorie succesvol aangemaakt.</p>
+    <?php elseif (isset($_GET['updated'])): ?>
+        <p class="success">Categorie succesvol bewerkt.</p>
     <?php endif; ?>
 
     <a href="categorie_aanmaken.php" class="btn-primary" style="margin-bottom: 1.5rem; display: inline-block;">+ Nieuwe categorie aanmaken</a>
