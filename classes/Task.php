@@ -30,10 +30,11 @@ class Task {
 
         $sql = "
             SELECT t.idTask, t.titel, t.prioriteit, t.status, t.deadline,
-                   c.naam AS categorie_naam, c.kleurcode
+                   t.Project_idProject, c.naam AS categorie_naam, c.kleurcode, p.naam AS project_naam
             FROM tasks t
             INNER JOIN task_user tu ON tu.Task_idTask = t.idTask
             LEFT JOIN categories c ON t.Category_idCategory = c.idCategory
+            LEFT JOIN projects p ON t.Project_idProject = p.idProject
             WHERE tu.User_idUser = ?
         ";
         $params = [$userId];
@@ -49,6 +50,10 @@ class Task {
         if (!empty($filters['categorie'])) {
             $sql .= " AND t.Category_idCategory = ?";
             $params[] = $filters['categorie'];
+        }
+        if (!empty($filters['project'])) {
+            $sql .= " AND t.Project_idProject = ?";
+            $params[] = $filters['project'];
         }
         if (!empty($filters['search'])) {
             $sql .= " AND t.titel LIKE ?";
@@ -82,8 +87,8 @@ class Task {
         }
 
         $stmt = $this->db->prepare("
-            INSERT INTO tasks (titel, beschrijving, prioriteit, status, deadline, Category_idCategory, User_idUser)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO tasks (titel, beschrijving, prioriteit, status, deadline, Category_idCategory, Project_idProject, User_idUser)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ");
         $stmt->execute([
             $data['titel'],
@@ -92,6 +97,7 @@ class Task {
             $data['status'],
             $data['deadline'] !== '' ? $data['deadline'] : null,
             $data['categorie'] !== '' ? $data['categorie'] : null,
+            $data['project'] !== '' ? $data['project'] : null,
             $creatorId,
         ]);
         $taskId = (int) $this->db->lastInsertId();
@@ -120,8 +126,8 @@ class Task {
         }
 
         $stmt = $this->db->prepare("
-            INSERT INTO tasks (titel, beschrijving, prioriteit, status, deadline, Category_idCategory, User_idUser)
-            VALUES (?, ?, ?, 'open', ?, ?, ?)
+            INSERT INTO tasks (titel, beschrijving, prioriteit, status, deadline, Category_idCategory, Project_idProject, User_idUser)
+            VALUES (?, ?, ?, 'open', ?, ?, ?, ?)
         ");
         $stmt->execute([
             $data['titel'],
@@ -129,6 +135,7 @@ class Task {
             $data['prioriteit'],
             $data['deadline'] !== '' ? $data['deadline'] : null,
             $data['categorie'] !== '' ? $data['categorie'] : null,
+            $data['project'] !== '' ? $data['project'] : null,
             $userId,
         ]);
         $taskId = (int) $this->db->lastInsertId();
@@ -159,10 +166,11 @@ class Task {
     public function getAllForAdmin(array $filters = []): array {
         $sql = "
             SELECT t.idTask, t.titel, t.prioriteit, t.status, t.deadline,
-                   c.naam AS categorie_naam, c.kleurcode,
+                   c.naam AS categorie_naam, c.kleurcode, p.naam AS project_naam,
                    GROUP_CONCAT(u.naam SEPARATOR ', ') AS gebruiker_naam
             FROM tasks t
             LEFT JOIN categories c ON t.Category_idCategory = c.idCategory
+            LEFT JOIN projects p ON t.Project_idProject = p.idProject
             LEFT JOIN task_user tu ON tu.Task_idTask = t.idTask
             LEFT JOIN users u ON tu.User_idUser = u.idUser
             WHERE 1=1
@@ -185,6 +193,10 @@ class Task {
             $sql .= " AND t.Category_idCategory = ?";
             $params[] = $filters['categorie'];
         }
+        if (!empty($filters['project'])) {
+            $sql .= " AND t.Project_idProject = ?";
+            $params[] = $filters['project'];
+        }
         if (!empty($filters['search'])) {
             $sql .= " AND t.titel LIKE ?";
             $params[] = "%{$filters['search']}%";
@@ -205,9 +217,11 @@ class Task {
     public function getById(int $taskId): ?array {
         $stmt = $this->db->prepare("
             SELECT t.idTask, t.titel, t.beschrijving, t.prioriteit, t.status, t.deadline,
-                   t.Category_idCategory, t.User_idUser, c.naam AS categorie_naam, c.kleurcode
+                   t.Category_idCategory, t.Project_idProject, t.User_idUser,
+                   c.naam AS categorie_naam, c.kleurcode, p.naam AS project_naam
             FROM tasks t
             LEFT JOIN categories c ON t.Category_idCategory = c.idCategory
+            LEFT JOIN projects p ON t.Project_idProject = p.idProject
             WHERE t.idTask = ?
         ");
         $stmt->execute([$taskId]);
@@ -236,7 +250,7 @@ class Task {
 
         $stmt = $this->db->prepare("
             UPDATE tasks
-            SET titel = ?, beschrijving = ?, prioriteit = ?, status = ?, deadline = ?, Category_idCategory = ?
+            SET titel = ?, beschrijving = ?, prioriteit = ?, status = ?, deadline = ?, Category_idCategory = ?, Project_idProject = ?
             WHERE idTask = ?
         ");
         $stmt->execute([
@@ -246,6 +260,7 @@ class Task {
             $data['status'],
             $data['deadline'] !== '' ? $data['deadline'] : null,
             $data['categorie'] !== '' ? $data['categorie'] : null,
+            $data['project'] !== '' ? $data['project'] : null,
             $taskId,
         ]);
 

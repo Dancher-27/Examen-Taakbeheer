@@ -11,21 +11,25 @@ if ($_SESSION['user_role'] === 'admin') {
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../classes/Task.php';
+require_once __DIR__ . '/../classes/Project.php';
 
 $db = (new Database())->getConnection();
 $taskModel = new Task($db);
+$projectModel = new Project($db);
 
 $sort = $_GET['sort'] ?? 'deadline';
 $filters = [
     'status' => $_GET['status'] ?? '',
     'prioriteit' => $_GET['prioriteit'] ?? '',
     'categorie' => $_GET['categorie'] ?? '',
+    'project' => $_GET['project'] ?? '',
     'search' => trim($_GET['search'] ?? ''),
 ];
 $hasFilters = array_filter($filters) !== [];
 
 $tasks = $taskModel->getForUser($_SESSION['user_id'], $filters, $sort);
 $categories = $taskModel->getCategories();
+$projects = $projectModel->getAll();
 ?>
 <!DOCTYPE html>
 <html lang="nl">
@@ -76,6 +80,15 @@ $categories = $taskModel->getCategories();
             <?php endforeach; ?>
         </select>
 
+        <select name="project">
+            <option value="">Alle projecten</option>
+            <?php foreach ($projects as $proj): ?>
+                <option value="<?= $proj['idProject'] ?>" <?= $filters['project'] == $proj['idProject'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($proj['naam']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+
         <select name="sort" onchange="this.form.submit()">
             <option value="deadline" <?= $sort === 'deadline' ? 'selected' : '' ?>>Sorteer op deadline</option>
             <option value="prioriteit" <?= $sort === 'prioriteit' ? 'selected' : '' ?>>Sorteer op prioriteit</option>
@@ -97,6 +110,7 @@ $categories = $taskModel->getCategories();
                     <th>Prioriteit</th>
                     <th>Status</th>
                     <th>Categorie</th>
+                    <th>Project</th>
                     <th>Deadline</th>
                     <th></th>
                 </tr>
@@ -112,6 +126,13 @@ $categories = $taskModel->getCategories();
                                 <span class="category-tag" style="background: <?= htmlspecialchars($task['kleurcode']) ?>;"><?= htmlspecialchars($task['categorie_naam']) ?></span>
                             <?php else: ?>
                                 <span class="no-items">Geen categorie</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if ($task['project_naam']): ?>
+                                <a href="project_details.php?id=<?= $task['Project_idProject'] ?>"><?= htmlspecialchars($task['project_naam']) ?></a>
+                            <?php else: ?>
+                                <span class="no-items">-</span>
                             <?php endif; ?>
                         </td>
                         <td data-deadline><?= $task['deadline'] ? (new DateTime($task['deadline']))->format('d-m-Y') : '-' ?></td>

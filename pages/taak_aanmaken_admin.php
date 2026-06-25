@@ -12,13 +12,16 @@ if ($_SESSION['user_role'] !== 'admin') {
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../classes/Task.php';
 require_once __DIR__ . '/../classes/User.php';
+require_once __DIR__ . '/../classes/Project.php';
 
 $db = (new Database())->getConnection();
 $taskModel = new Task($db);
 $userModel = new User($db);
+$projectModel = new Project($db);
 
 $categories = $taskModel->getCategories();
 $users = $userModel->getAll();
+$projects = $projectModel->getAll();
 
 $errors = [];
 $formData = [
@@ -28,6 +31,7 @@ $formData = [
     'status' => 'open',
     'deadline' => '',
     'categorie' => '',
+    'project' => '',
     'gebruikers' => [],
 ];
 
@@ -38,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $formData['status'] = $_POST['status'] ?? '';
     $formData['deadline'] = $_POST['deadline'] ?? '';
     $formData['categorie'] = $_POST['categorie'] ?? '';
+    $formData['project'] = $_POST['project'] ?? '';
     $formData['gebruikers'] = $_POST['gebruikers'] ?? [];
 
     $result = $taskModel->create($formData, $_SESSION['user_id']);
@@ -111,6 +116,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php foreach ($categories as $cat): ?>
                         <option value="<?= $cat['idCategory'] ?>" <?= $formData['categorie'] == $cat['idCategory'] ? 'selected' : '' ?>>
                             <?= htmlspecialchars($cat['naam']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="project">Project</label>
+                <select id="project" name="project">
+                    <option value="">Geen project</option>
+                    <?php foreach ($projects as $proj): ?>
+                        <option value="<?= $proj['idProject'] ?>" <?= $formData['project'] == $proj['idProject'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($proj['naam']) ?>
                         </option>
                     <?php endforeach; ?>
                 </select>

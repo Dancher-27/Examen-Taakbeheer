@@ -72,6 +72,10 @@ $activeUsers = $userModel->getMostActive();
             <h2>Categoriebeheer</h2>
             <p>Voeg categorieën toe, bewerk of verwijder ze.</p>
         </a>
+        <a href="projecten.php" class="admin-card">
+            <h2>Projecten</h2>
+            <p>Groepeer taken per project en houd overzicht.</p>
+        </a>
         <a href="taken_admin.php" class="admin-card">
             <h2>Takenoverzicht</h2>
             <p>Bekijk en filter alle taken van alle gebruikers.</p>

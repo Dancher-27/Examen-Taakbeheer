@@ -8,9 +8,11 @@ if (!isset($_SESSION['user_id'])) {
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../classes/Task.php';
 require_once __DIR__ . '/../classes/User.php';
+require_once __DIR__ . '/../classes/Project.php';
 
 $db = (new Database())->getConnection();
 $taskModel = new Task($db);
+$projectModel = new Project($db);
 
 $isAdmin = $_SESSION['user_role'] === 'admin';
 $taskId = (int) ($_GET['id'] ?? 0);
@@ -31,6 +33,7 @@ $isCreator = (int) $task['User_idUser'] === (int) $_SESSION['user_id'];
 $canEditAll = $isAdmin || $isCreator;
 
 $categories = $taskModel->getCategories();
+$projects = $projectModel->getAll();
 $assignedUsers = $taskModel->getAssignedUsers($taskId);
 $assignedIds = array_column($assignedUsers, 'idUser');
 
@@ -48,6 +51,7 @@ $formData = [
     'status' => $task['status'],
     'deadline' => $task['deadline'] ?? '',
     'categorie' => $task['Category_idCategory'] ?? '',
+    'project' => $task['Project_idProject'] ?? '',
     'gebruikers' => $assignedIds,
 ];
 
@@ -59,6 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $formData['status'] = $_POST['status'] ?? '';
         $formData['deadline'] = $_POST['deadline'] ?? '';
         $formData['categorie'] = $_POST['categorie'] ?? '';
+        $formData['project'] = $_POST['project'] ?? '';
         $formData['gebruikers'] = $_POST['gebruikers'] ?? $assignedIds;
 
         $result = $taskModel->update($taskId, $formData, $_SESSION['user_id'], $isAdmin);
@@ -140,6 +145,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php foreach ($categories as $cat): ?>
                         <option value="<?= $cat['idCategory'] ?>" <?= $formData['categorie'] == $cat['idCategory'] ? 'selected' : '' ?>>
                             <?= htmlspecialchars($cat['naam']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="project">Project</label>
+                <select id="project" name="project" <?= $canEditAll ? '' : 'disabled' ?>>
+                    <option value="">Geen project</option>
+                    <?php foreach ($projects as $proj): ?>
+                        <option value="<?= $proj['idProject'] ?>" <?= $formData['project'] == $proj['idProject'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($proj['naam']) ?>
                         </option>
                     <?php endforeach; ?>
                 </select>

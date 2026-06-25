@@ -12,22 +12,26 @@ if ($_SESSION['user_role'] !== 'admin') {
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../classes/Task.php';
 require_once __DIR__ . '/../classes/User.php';
+require_once __DIR__ . '/../classes/Project.php';
 
 $db = (new Database())->getConnection();
 $taskModel = new Task($db);
 $userModel = new User($db);
+$projectModel = new Project($db);
 
 $filters = [
     'user' => $_GET['user'] ?? '',
     'status' => $_GET['status'] ?? '',
     'prioriteit' => $_GET['prioriteit'] ?? '',
     'categorie' => $_GET['categorie'] ?? '',
+    'project' => $_GET['project'] ?? '',
     'search' => trim($_GET['search'] ?? ''),
 ];
 
 $tasks = $taskModel->getAllForAdmin($filters);
 $users = $userModel->getAll();
 $categories = $taskModel->getCategories();
+$projects = $projectModel->getAll();
 ?>
 <!DOCTYPE html>
 <html lang="nl">
@@ -87,6 +91,15 @@ $categories = $taskModel->getCategories();
             <?php endforeach; ?>
         </select>
 
+        <select name="project">
+            <option value="">Alle projecten</option>
+            <?php foreach ($projects as $proj): ?>
+                <option value="<?= $proj['idProject'] ?>" <?= $filters['project'] == $proj['idProject'] ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($proj['naam']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+
         <button type="submit" class="btn-primary">Filteren</button>
     </form>
 
@@ -101,6 +114,7 @@ $categories = $taskModel->getCategories();
                     <th>Prioriteit</th>
                     <th>Status</th>
                     <th>Categorie</th>
+                    <th>Project</th>
                     <th>Deadline</th>
                     <th></th>
                 </tr>
@@ -119,6 +133,7 @@ $categories = $taskModel->getCategories();
                                 <span class="no-items">Geen categorie</span>
                             <?php endif; ?>
                         </td>
+                        <td><?= $task['project_naam'] ? htmlspecialchars($task['project_naam']) : '-' ?></td>
                         <td><?= $task['deadline'] ? (new DateTime($task['deadline']))->format('d-m-Y') : '-' ?></td>
                         <td><a href="taak_details.php?id=<?= $task['idTask'] ?>">Details</a></td>
                     </tr>

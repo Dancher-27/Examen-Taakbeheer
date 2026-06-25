@@ -9,6 +9,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             <li><a href="admin_dashboard.php" class="<?= $currentPage === 'admin_dashboard.php' ? 'active' : '' ?>">Dashboard</a></li>
             <li><a href="gebruikers.php" class="<?= $currentPage === 'gebruikers.php' ? 'active' : '' ?>">Gebruikers</a></li>
             <li><a href="categorieen.php" class="<?= $currentPage === 'categorieen.php' ? 'active' : '' ?>">Categorieën</a></li>
+            <li><a href="projecten.php" class="<?= $currentPage === 'projecten.php' ? 'active' : '' ?>">Projecten</a></li>
             <li><a href="taken_admin.php" class="<?= $currentPage === 'taken_admin.php' ? 'active' : '' ?>">Taken</a></li>
         <?php else: ?>
             <li><a href="dashboard.php" class="<?= $currentPage === 'dashboard.php' ? 'active' : '' ?>">Dashboard</a></li>

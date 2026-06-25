@@ -1,6 +1,7 @@
 CREATE DATABASE IF NOT EXISTS taakbeheer CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE taakbeheer;
 
+
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -24,7 +25,7 @@ CREATE TABLE `activity_log` (
   PRIMARY KEY (`idActivityLog`),
   KEY `fk_log_user` (`User_idUser`),
   CONSTRAINT `fk_log_user` FOREIGN KEY (`User_idUser`) REFERENCES `users` (`idUser`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `categories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -36,6 +37,18 @@ CREATE TABLE `categories` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`idCategory`),
   UNIQUE KEY `uq_categories_naam` (`naam`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `projects`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `projects` (
+  `idProject` int(11) NOT NULL AUTO_INCREMENT,
+  `naam` varchar(150) NOT NULL,
+  `beschrijving` text DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`idProject`),
+  UNIQUE KEY `uq_projects_naam` (`naam`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `task_progress`;
@@ -52,7 +65,7 @@ CREATE TABLE `task_progress` (
   KEY `fk_progress_user` (`User_idUser`),
   CONSTRAINT `fk_progress_task` FOREIGN KEY (`Task_idTask`) REFERENCES `tasks` (`idTask`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_progress_user` FOREIGN KEY (`User_idUser`) REFERENCES `users` (`idUser`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `task_user`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -67,7 +80,7 @@ CREATE TABLE `task_user` (
   KEY `fk_taskuser_user` (`User_idUser`),
   CONSTRAINT `fk_taskuser_task` FOREIGN KEY (`Task_idTask`) REFERENCES `tasks` (`idTask`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_taskuser_user` FOREIGN KEY (`User_idUser`) REFERENCES `users` (`idUser`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `tasks`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -80,14 +93,17 @@ CREATE TABLE `tasks` (
   `status` enum('open','in_progress','done') NOT NULL DEFAULT 'open',
   `deadline` date DEFAULT NULL,
   `Category_idCategory` int(11) DEFAULT NULL,
+  `Project_idProject` int(11) DEFAULT NULL,
   `User_idUser` int(11) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`idTask`),
   KEY `fk_tasks_category` (`Category_idCategory`),
   KEY `fk_tasks_user` (`User_idUser`),
+  KEY `fk_tasks_project` (`Project_idProject`),
   CONSTRAINT `fk_tasks_category` FOREIGN KEY (`Category_idCategory`) REFERENCES `categories` (`idCategory`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_tasks_project` FOREIGN KEY (`Project_idProject`) REFERENCES `projects` (`idProject`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_tasks_user` FOREIGN KEY (`User_idUser`) REFERENCES `users` (`idUser`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;

@@ -11,11 +11,14 @@ if ($_SESSION['user_role'] === 'admin') {
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../classes/Task.php';
+require_once __DIR__ . '/../classes/Project.php';
 
 $db = (new Database())->getConnection();
 $taskModel = new Task($db);
+$projectModel = new Project($db);
 
 $categories = $taskModel->getCategories();
+$projects = $projectModel->getAll();
 
 $errors = [];
 $formData = [
@@ -24,6 +27,7 @@ $formData = [
     'prioriteit' => 'gemiddeld',
     'deadline' => '',
     'categorie' => '',
+    'project' => '',
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -32,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $formData['prioriteit'] = $_POST['prioriteit'] ?? '';
     $formData['deadline'] = $_POST['deadline'] ?? '';
     $formData['categorie'] = $_POST['categorie'] ?? '';
+    $formData['project'] = $_POST['project'] ?? '';
 
     $result = $taskModel->createForSelf($formData, $_SESSION['user_id']);
 
@@ -92,6 +97,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php foreach ($categories as $cat): ?>
                         <option value="<?= $cat['idCategory'] ?>" <?= $formData['categorie'] == $cat['idCategory'] ? 'selected' : '' ?>>
                             <?= htmlspecialchars($cat['naam']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="project">Project</label>
+                <select id="project" name="project">
+                    <option value="">Geen project</option>
+                    <?php foreach ($projects as $proj): ?>
+                        <option value="<?= $proj['idProject'] ?>" <?= $formData['project'] == $proj['idProject'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($proj['naam']) ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
