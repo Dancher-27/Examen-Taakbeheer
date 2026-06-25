@@ -141,6 +141,16 @@ class Task {
         return ['success' => true];
     }
 
+    public function delete(int $taskId, int $userId): array {
+        $this->db->prepare("DELETE FROM task_user WHERE Task_idTask = ?")->execute([$taskId]);
+        $this->db->prepare("DELETE FROM task_progress WHERE Task_idTask = ?")->execute([$taskId]);
+        $this->db->prepare("DELETE FROM tasks WHERE idTask = ?")->execute([$taskId]);
+
+        $this->logActivity($userId, 'verwijderd', 'taak', $taskId);
+
+        return ['success' => true];
+    }
+
     private function logActivity(int $userId, string $actie, string $entiteit, int $entiteitId): void {
         $stmt = $this->db->prepare("INSERT INTO activity_log (actie, entiteit, entiteit_id, User_idUser) VALUES (?, ?, ?, ?)");
         $stmt->execute([$actie, $entiteit, $entiteitId, $userId]);

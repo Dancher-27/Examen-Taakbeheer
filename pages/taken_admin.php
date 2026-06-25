@@ -46,6 +46,9 @@ $categories = $taskModel->getCategories();
     <?php if (isset($_GET['created'])): ?>
         <p class="success">Taak succesvol aangemaakt.</p>
     <?php endif; ?>
+    <?php if (isset($_GET['deleted'])): ?>
+        <p class="success">Taak succesvol verwijderd.</p>
+    <?php endif; ?>
 
     <a href="taak_aanmaken_admin.php" class="btn-primary" style="margin-bottom: 1.5rem; display: inline-block;">+ Nieuwe taak aanmaken</a>
 
