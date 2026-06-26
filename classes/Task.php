@@ -186,7 +186,7 @@ class Task {
     public function getAllForAdmin(array $filters = []): array {
         $sql = "
             SELECT t.idTask, t.titel, t.prioriteit, t.status, t.deadline,
-                   c.naam AS categorie_naam, c.kleurcode, p.naam AS project_naam,
+                   t.Project_idProject, c.naam AS categorie_naam, c.kleurcode, p.naam AS project_naam,
                    GROUP_CONCAT(u.naam SEPARATOR ', ') AS gebruiker_naam
             FROM tasks t
             LEFT JOIN categories c ON t.Category_idCategory = c.idCategory

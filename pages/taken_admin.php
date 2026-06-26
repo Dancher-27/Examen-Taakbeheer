@@ -32,6 +32,20 @@ $tasks = $taskModel->getAllForAdmin($filters);
 $users = $userModel->getAll();
 $categories = $taskModel->getCategories();
 $projects = $projectModel->getAll();
+
+$activeTasks = [];
+$overdueTasks = [];
+$doneTasks = [];
+
+foreach ($tasks as $task) {
+    if ($task['status'] === 'done') {
+        $doneTasks[] = $task;
+    } elseif ($task['deadline'] && $task['deadline'] < date('Y-m-d')) {
+        $overdueTasks[] = $task;
+    } else {
+        $activeTasks[] = $task;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="nl">
@@ -106,46 +120,141 @@ $projects = $projectModel->getAll();
     <?php if (empty($tasks)): ?>
         <p class="no-items">Geen taken gevonden.</p>
     <?php else: ?>
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Titel</th>
-                    <th>Gebruiker</th>
-                    <th>Prioriteit</th>
-                    <th>Status</th>
-                    <th>Categorie</th>
-                    <th>Project</th>
-                    <th>Deadline</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($tasks as $task): ?>
+
+        <h2 style="margin-bottom: 0.75rem;">Actieve taken</h2>
+        <?php if (empty($activeTasks)): ?>
+            <p class="no-items" style="margin-bottom: 1.5rem;">Geen actieve taken.</p>
+        <?php else: ?>
+            <table class="data-table" style="margin-bottom: 1.5rem;">
+                <thead>
                     <tr>
-                        <td><?= htmlspecialchars($task['titel']) ?></td>
-                        <td><?= htmlspecialchars($task['gebruiker_naam'] ?? '-') ?></td>
-                        <td><span class="prio-<?= $task['prioriteit'] ?>"><?= ucfirst($task['prioriteit']) ?></span></td>
-                        <td><span class="status-badge status-<?= $task['status'] ?>"><?= ucfirst(str_replace('_', ' ', $task['status'])) ?></span></td>
-                        <td>
-                            <?php if ($task['categorie_naam']): ?>
-                                <span class="category-tag" style="background: <?= htmlspecialchars($task['kleurcode']) ?>;"><?= htmlspecialchars($task['categorie_naam']) ?></span>
-                            <?php else: ?>
-                                <span class="no-items">Geen categorie</span>
-                            <?php endif; ?>
-                        </td>
-                        <td>
-                            <?php if ($task['project_naam']): ?>
-                                <span class="project-tag"><?= htmlspecialchars($task['project_naam']) ?></span>
-                            <?php else: ?>
-                                <span class="no-items">-</span>
-                            <?php endif; ?>
-                        </td>
-                        <td><?= $task['deadline'] ? (new DateTime($task['deadline']))->format('d-m-Y') : '-' ?></td>
-                        <td><a href="taak_details.php?id=<?= $task['idTask'] ?>">Details</a></td>
+                        <th>Titel</th>
+                        <th>Gebruiker</th>
+                        <th>Prioriteit</th>
+                        <th>Status</th>
+                        <th>Categorie</th>
+                        <th>Project</th>
+                        <th>Deadline</th>
+                        <th></th>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?php foreach ($activeTasks as $task): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($task['titel']) ?></td>
+                            <td><?= htmlspecialchars($task['gebruiker_naam'] ?? '-') ?></td>
+                            <td><span class="prio-<?= $task['prioriteit'] ?>"><?= ucfirst($task['prioriteit']) ?></span></td>
+                            <td><span class="status-badge status-<?= $task['status'] ?>"><?= ucfirst(str_replace('_', ' ', $task['status'])) ?></span></td>
+                            <td>
+                                <?php if ($task['categorie_naam']): ?>
+                                    <span class="category-tag" style="background: <?= htmlspecialchars($task['kleurcode']) ?>;"><?= htmlspecialchars($task['categorie_naam']) ?></span>
+                                <?php else: ?>
+                                    <span class="no-items">Geen categorie</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if ($task['project_naam']): ?>
+                                    <a href="project_details.php?id=<?= $task['Project_idProject'] ?>" class="project-tag"><?= htmlspecialchars($task['project_naam']) ?></a>
+                                <?php else: ?>
+                                    <span class="no-items">-</span>
+                                <?php endif; ?>
+                            </td>
+                            <td><?= $task['deadline'] ? (new DateTime($task['deadline']))->format('d-m-Y') : '-' ?></td>
+                            <td><a href="taak_details.php?id=<?= $task['idTask'] ?>">Details</a></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+
+        <h2 class="section-heading-overdue" style="margin-bottom: 0.75rem;">Verlopen</h2>
+        <?php if (empty($overdueTasks)): ?>
+            <p class="no-items" style="margin-bottom: 1.5rem;">Geen verlopen taken.</p>
+        <?php else: ?>
+            <table class="data-table urgency-section urgency-section-overdue" style="margin-bottom: 1.5rem;">
+                <thead>
+                    <tr>
+                        <th>Titel</th>
+                        <th>Gebruiker</th>
+                        <th>Prioriteit</th>
+                        <th>Categorie</th>
+                        <th>Project</th>
+                        <th>Deadline</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($overdueTasks as $task): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($task['titel']) ?></td>
+                            <td><?= htmlspecialchars($task['gebruiker_naam'] ?? '-') ?></td>
+                            <td><span class="prio-<?= $task['prioriteit'] ?>"><?= ucfirst($task['prioriteit']) ?></span></td>
+                            <td>
+                                <?php if ($task['categorie_naam']): ?>
+                                    <span class="category-tag" style="background: <?= htmlspecialchars($task['kleurcode']) ?>;"><?= htmlspecialchars($task['categorie_naam']) ?></span>
+                                <?php else: ?>
+                                    <span class="no-items">Geen categorie</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if ($task['project_naam']): ?>
+                                    <a href="project_details.php?id=<?= $task['Project_idProject'] ?>" class="project-tag"><?= htmlspecialchars($task['project_naam']) ?></a>
+                                <?php else: ?>
+                                    <span class="no-items">-</span>
+                                <?php endif; ?>
+                            </td>
+                            <td><?= (new DateTime($task['deadline']))->format('d-m-Y') ?></td>
+                            <td><a href="taak_details.php?id=<?= $task['idTask'] ?>">Details</a></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+
+        <h2 class="section-heading-done" style="margin-bottom: 0.75rem;">Done</h2>
+        <?php if (empty($doneTasks)): ?>
+            <p class="no-items">Nog geen voltooide taken.</p>
+        <?php else: ?>
+            <table class="data-table urgency-section urgency-section-done">
+                <thead>
+                    <tr>
+                        <th>Titel</th>
+                        <th>Gebruiker</th>
+                        <th>Prioriteit</th>
+                        <th>Categorie</th>
+                        <th>Project</th>
+                        <th>Deadline</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($doneTasks as $task): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($task['titel']) ?></td>
+                            <td><?= htmlspecialchars($task['gebruiker_naam'] ?? '-') ?></td>
+                            <td><span class="prio-<?= $task['prioriteit'] ?>"><?= ucfirst($task['prioriteit']) ?></span></td>
+                            <td>
+                                <?php if ($task['categorie_naam']): ?>
+                                    <span class="category-tag" style="background: <?= htmlspecialchars($task['kleurcode']) ?>;"><?= htmlspecialchars($task['categorie_naam']) ?></span>
+                                <?php else: ?>
+                                    <span class="no-items">Geen categorie</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if ($task['project_naam']): ?>
+                                    <a href="project_details.php?id=<?= $task['Project_idProject'] ?>" class="project-tag"><?= htmlspecialchars($task['project_naam']) ?></a>
+                                <?php else: ?>
+                                    <span class="no-items">-</span>
+                                <?php endif; ?>
+                            </td>
+                            <td><?= $task['deadline'] ? (new DateTime($task['deadline']))->format('d-m-Y') : '-' ?></td>
+                            <td><a href="taak_details.php?id=<?= $task['idTask'] ?>">Details</a></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+
     <?php endif; ?>
 </div>
 </body>
