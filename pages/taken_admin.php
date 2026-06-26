@@ -133,7 +133,13 @@ $projects = $projectModel->getAll();
                                 <span class="no-items">Geen categorie</span>
                             <?php endif; ?>
                         </td>
-                        <td><?= $task['project_naam'] ? htmlspecialchars($task['project_naam']) : '-' ?></td>
+                        <td>
+                            <?php if ($task['project_naam']): ?>
+                                <span class="project-tag"><?= htmlspecialchars($task['project_naam']) ?></span>
+                            <?php else: ?>
+                                <span class="no-items">-</span>
+                            <?php endif; ?>
+                        </td>
                         <td><?= $task['deadline'] ? (new DateTime($task['deadline']))->format('d-m-Y') : '-' ?></td>
                         <td><a href="taak_details.php?id=<?= $task['idTask'] ?>">Details</a></td>
                     </tr>
