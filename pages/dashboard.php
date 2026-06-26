@@ -10,9 +10,13 @@ if ($_SESSION['user_role'] === 'admin') {
 }
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../classes/Task.php';
 
 $db = (new Database())->getConnection();
+$taskModel = new Task($db);
 $userId = $_SESSION['user_id'];
+
+$myProjects = $taskModel->getProjectsForUser($userId);
 
 $stmt = $db->prepare("
     SELECT COUNT(*) AS total
@@ -82,6 +86,21 @@ $urgentTasks = $stmt->fetchAll();
                 </ul>
             <?php endif; ?>
         </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 1.5rem;">
+        <h2>Mijn projecten</h2>
+        <?php if (empty($myProjects)): ?>
+            <p class="no-items">Je bent nog aan geen taken binnen een project toegewezen.</p>
+        <?php else: ?>
+            <div class="project-tag-list">
+                <?php foreach ($myProjects as $project): ?>
+                    <a href="project_details.php?id=<?= $project['idProject'] ?>" class="project-tag">
+                        <?= htmlspecialchars($project['naam']) ?>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
     </div>
 
     <a href="tasks.php" class="btn-primary">Ga naar takenoverzicht</a>

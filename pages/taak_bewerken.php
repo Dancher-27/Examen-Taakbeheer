@@ -32,6 +32,10 @@ if (!$isAdmin && !$taskModel->isAssignedToUser($taskId, $_SESSION['user_id'])) {
 $isCreator = (int) $task['User_idUser'] === (int) $_SESSION['user_id'];
 $canEditAll = $isAdmin || $isCreator;
 
+$isDone = $task['status'] === 'done';
+$isOverdue = $task['deadline'] && $task['deadline'] < date('Y-m-d') && !$isDone;
+$isLocked = !$isAdmin && ($isDone || $isOverdue);
+
 $categories = $taskModel->getCategories();
 $projects = $projectModel->getAll();
 $assignedUsers = $taskModel->getAssignedUsers($taskId);
@@ -55,7 +59,7 @@ $formData = [
     'gebruikers' => $assignedIds,
 ];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$isLocked) {
     if ($canEditAll) {
         $formData['titel'] = trim($_POST['titel'] ?? '');
         $formData['beschrijving'] = trim($_POST['beschrijving'] ?? '');
@@ -97,13 +101,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class="auth-container edit-form">
         <form method="POST" novalidate>
-            <?php if (!$canEditAll): ?>
+            <?php if ($isLocked): ?>
+                <p class="urgency-tag <?= $isDone ? 'urgency-tag-done' : 'urgency-tag-overdue' ?>" style="display: block; margin-bottom: 1rem;">
+                    Vergrendeld — deze taak is <?= $isDone ? 'voltooid' : 'verlopen' ?> en kan niet meer bewerkt worden. Vraag een admin om de deadline te verlengen.
+                </p>
+            <?php elseif (!$canEditAll): ?>
                 <p class="no-items">Je bent alleen toegewezen aan deze taak — je kunt enkel de status aanpassen.</p>
             <?php endif; ?>
 
             <div class="form-group">
                 <label for="titel">Titel</label>
-                <input type="text" id="titel" name="titel" value="<?= htmlspecialchars($formData['titel']) ?>" <?= $canEditAll ? '' : 'disabled' ?>>
+                <input type="text" id="titel" name="titel" value="<?= htmlspecialchars($formData['titel']) ?>" <?= ($canEditAll && !$isLocked) ? '' : 'disabled' ?>>
                 <?php if (!empty($errors['titel'])): ?>
                     <span class="error"><?= htmlspecialchars($errors['titel']) ?></span>
                 <?php endif; ?>
@@ -111,12 +119,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="form-group">
                 <label for="beschrijving">Beschrijving</label>
-                <textarea id="beschrijving" name="beschrijving" rows="4" <?= $canEditAll ? '' : 'disabled' ?>><?= htmlspecialchars($formData['beschrijving']) ?></textarea>
+                <textarea id="beschrijving" name="beschrijving" rows="4" <?= ($canEditAll && !$isLocked) ? '' : 'disabled' ?>><?= htmlspecialchars($formData['beschrijving']) ?></textarea>
             </div>
 
             <div class="form-group">
                 <label for="prioriteit">Prioriteit</label>
-                <select id="prioriteit" name="prioriteit" <?= $canEditAll ? '' : 'disabled' ?>>
+                <select id="prioriteit" name="prioriteit" <?= ($canEditAll && !$isLocked) ? '' : 'disabled' ?>>
                     <option value="laag" <?= $formData['prioriteit'] === 'laag' ? 'selected' : '' ?>>Laag</option>
                     <option value="gemiddeld" <?= $formData['prioriteit'] === 'gemiddeld' ? 'selected' : '' ?>>Gemiddeld</option>
                     <option value="hoog" <?= $formData['prioriteit'] === 'hoog' ? 'selected' : '' ?>>Hoog</option>
@@ -128,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="form-group">
                 <label for="status">Status</label>
-                <select id="status" name="status">
+                <select id="status" name="status" <?= $isLocked ? 'disabled' : '' ?>>
                     <option value="open" <?= $formData['status'] === 'open' ? 'selected' : '' ?>>Open</option>
                     <option value="in_progress" <?= $formData['status'] === 'in_progress' ? 'selected' : '' ?>>In progress</option>
                     <option value="done" <?= $formData['status'] === 'done' ? 'selected' : '' ?>>Done</option>
@@ -140,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="form-group">
                 <label for="categorie">Categorie</label>
-                <select id="categorie" name="categorie" <?= $canEditAll ? '' : 'disabled' ?>>
+                <select id="categorie" name="categorie" <?= ($canEditAll && !$isLocked) ? '' : 'disabled' ?>>
                     <option value="">Geen categorie</option>
                     <?php foreach ($categories as $cat): ?>
                         <option value="<?= $cat['idCategory'] ?>" <?= $formData['categorie'] == $cat['idCategory'] ? 'selected' : '' ?>>
@@ -152,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="form-group">
                 <label for="project">Project</label>
-                <select id="project" name="project" <?= $canEditAll ? '' : 'disabled' ?>>
+                <select id="project" name="project" <?= ($canEditAll && !$isLocked) ? '' : 'disabled' ?>>
                     <option value="">Geen project</option>
                     <?php foreach ($projects as $proj): ?>
                         <option value="<?= $proj['idProject'] ?>" <?= $formData['project'] == $proj['idProject'] ? 'selected' : '' ?>>
@@ -164,7 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="form-group">
                 <label for="deadline">Deadline</label>
-                <input type="date" id="deadline" name="deadline" value="<?= htmlspecialchars($formData['deadline']) ?>" <?= $canEditAll ? '' : 'disabled' ?>>
+                <input type="date" id="deadline" name="deadline" value="<?= htmlspecialchars($formData['deadline']) ?>" <?= ($canEditAll && !$isLocked) ? '' : 'disabled' ?>>
             </div>
 
             <?php if ($isAdmin): ?>
@@ -184,7 +192,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
 
-            <button type="submit">Wijzigingen opslaan</button>
+            <?php if (!$isLocked): ?>
+                <button type="submit">Wijzigingen opslaan</button>
+            <?php endif; ?>
         </form>
     </div>
 </div>

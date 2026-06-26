@@ -40,6 +40,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['voortgang_beschrijvin
 $isCreator = (int) $task['User_idUser'] === (int) $_SESSION['user_id'];
 $canDelete = $isAdmin || $isCreator;
 
+$isDone = $task['status'] === 'done';
+$isOverdue = $task['deadline'] && $task['deadline'] < date('Y-m-d') && !$isDone;
+$isLocked = !$isAdmin && ($isDone || $isOverdue);
+
 $assignedUsers = $taskModel->getAssignedUsers($taskId);
 $progressUpdates = $taskModel->getProgressUpdates($taskId);
 ?>
@@ -75,7 +79,11 @@ $progressUpdates = $taskModel->getProgressUpdates($taskId);
                     Geen categorie
                 <?php endif; ?>
             </p>
-            <p><strong>Deadline:</strong> <?= $task['deadline'] ? (new DateTime($task['deadline']))->format('d-m-Y') : '-' ?></p>
+            <p><strong>Deadline:</strong> <?= $task['deadline'] ? (new DateTime($task['deadline']))->format('d-m-Y') : '-' ?>
+                <?php if ($isLocked): ?>
+                    <span class="urgency-tag <?= $isDone ? 'urgency-tag-done' : 'urgency-tag-overdue' ?>">Vergrendeld</span>
+                <?php endif; ?>
+            </p>
             <p><strong>Toegewezen gebruikers:</strong>
                 <?= !empty($assignedUsers) ? htmlspecialchars(implode(', ', array_column($assignedUsers, 'naam'))) : 'Niemand toegewezen' ?>
             </p>

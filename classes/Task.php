@@ -30,12 +30,15 @@ class Task {
 
         $sql = "
             SELECT t.idTask, t.titel, t.prioriteit, t.status, t.deadline,
-                   t.Project_idProject, c.naam AS categorie_naam, c.kleurcode, p.naam AS project_naam
+                   t.Project_idProject, c.naam AS categorie_naam, c.kleurcode, p.naam AS project_naam,
+                   GROUP_CONCAT(DISTINCT u.naam SEPARATOR ', ') AS gebruiker_naam
             FROM tasks t
-            INNER JOIN task_user tu ON tu.Task_idTask = t.idTask
+            INNER JOIN task_user tu ON tu.Task_idTask = t.idTask AND tu.User_idUser = ?
             LEFT JOIN categories c ON t.Category_idCategory = c.idCategory
             LEFT JOIN projects p ON t.Project_idProject = p.idProject
-            WHERE tu.User_idUser = ?
+            LEFT JOIN task_user tu2 ON tu2.Task_idTask = t.idTask
+            LEFT JOIN users u ON tu2.User_idUser = u.idUser
+            WHERE 1=1
         ";
         $params = [$userId];
 
@@ -60,10 +63,23 @@ class Task {
             $params[] = "%{$filters['search']}%";
         }
 
-        $sql .= " ORDER BY $orderBy";
+        $sql .= " GROUP BY t.idTask ORDER BY $orderBy";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    public function getProjectsForUser(int $userId): array {
+        $stmt = $this->db->prepare("
+            SELECT DISTINCT p.idProject, p.naam
+            FROM projects p
+            INNER JOIN tasks t ON t.Project_idProject = p.idProject
+            INNER JOIN task_user tu ON tu.Task_idTask = t.idTask
+            WHERE tu.User_idUser = ?
+            ORDER BY p.naam ASC
+        ");
+        $stmt->execute([$userId]);
         return $stmt->fetchAll();
     }
 
