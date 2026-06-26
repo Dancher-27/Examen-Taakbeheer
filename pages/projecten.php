@@ -33,6 +33,12 @@ $projects = $projectModel->getAll();
     <?php if (isset($_GET['created'])): ?>
         <p class="success">Project succesvol aangemaakt.</p>
     <?php endif; ?>
+    <?php if (isset($_GET['updated'])): ?>
+        <p class="success">Project succesvol bewerkt.</p>
+    <?php endif; ?>
+    <?php if (isset($_GET['deleted'])): ?>
+        <p class="success">Project succesvol verwijderd.</p>
+    <?php endif; ?>
 
     <a href="project_aanmaken.php" class="btn-primary" style="margin-bottom: 1.5rem; display: inline-block;">+ Nieuw project aanmaken</a>
 
@@ -45,6 +51,7 @@ $projects = $projectModel->getAll();
                     <th>Naam</th>
                     <th>Beschrijving</th>
                     <th>Aantal taken</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -53,6 +60,10 @@ $projects = $projectModel->getAll();
                         <td><?= htmlspecialchars($project['naam']) ?></td>
                         <td><?= htmlspecialchars($project['beschrijving'] ?: '-') ?></td>
                         <td><?= (int) $project['taken_count'] ?></td>
+                        <td>
+                            <a href="project_bewerken.php?id=<?= $project['idProject'] ?>">Bewerken</a>
+                            | <a href="project_verwijderen.php?id=<?= $project['idProject'] ?>" onclick="return confirm('Weet je zeker dat je dit project wilt verwijderen?')">Verwijderen</a>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
