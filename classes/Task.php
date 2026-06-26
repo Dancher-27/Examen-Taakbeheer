@@ -281,7 +281,7 @@ class Task {
         return ['success' => true];
     }
 
-    public function updateStatus(int $taskId, string $status, int $userId): array {
+    public function updateStatus(int $taskId, string $status): array {
         if (!in_array($status, ['open', 'in_progress', 'done'], true)) {
             return ['success' => false, 'errors' => ['status' => 'Kies een geldige status.']];
         }
@@ -289,7 +289,7 @@ class Task {
         $stmt = $this->db->prepare("UPDATE tasks SET status = ? WHERE idTask = ?");
         $stmt->execute([$status, $taskId]);
 
-        $this->logActivity($userId, 'bewerkt', 'taak', $taskId);
+        $this->logActivity('bewerkt', 'taak', $taskId);
 
         return ['success' => true];
     }

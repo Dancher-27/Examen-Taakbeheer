@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $result = $taskModel->update($taskId, $formData, $_SESSION['user_id'], $isAdmin);
     } else {
         $formData['status'] = $_POST['status'] ?? '';
-        $result = $taskModel->updateStatus($taskId, $formData['status'], $_SESSION['user_id']);
+        $result = $taskModel->updateStatus($taskId, $formData['status']);
     }
 
     if ($result['success']) {
