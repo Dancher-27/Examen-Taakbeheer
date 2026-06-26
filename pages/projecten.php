@@ -57,7 +57,7 @@ $projects = $projectModel->getAll();
             <tbody>
                 <?php foreach ($projects as $project): ?>
                     <tr>
-                        <td><?= htmlspecialchars($project['naam']) ?></td>
+                        <td><a href="project_details.php?id=<?= $project['idProject'] ?>"><?= htmlspecialchars($project['naam']) ?></a></td>
                         <td><?= htmlspecialchars($project['beschrijving'] ?: '-') ?></td>
                         <td><?= (int) $project['taken_count'] ?></td>
                         <td>

@@ -4,10 +4,6 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: login.php?error=niet_ingelogd');
     exit;
 }
-if ($_SESSION['user_role'] === 'admin') {
-    header('Location: login.php?error=geen_toegang');
-    exit;
-}
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../classes/Task.php';
@@ -17,15 +13,20 @@ $db = (new Database())->getConnection();
 $taskModel = new Task($db);
 $projectModel = new Project($db);
 
+$isAdmin = $_SESSION['user_role'] === 'admin';
+$backUrl = $isAdmin ? 'taken_admin.php' : 'tasks.php';
+
 $projectId = (int) ($_GET['id'] ?? 0);
 $project = $projectModel->getById($projectId);
 
 if (!$project) {
-    header('Location: tasks.php');
+    header("Location: $backUrl");
     exit;
 }
 
-$tasks = $taskModel->getForUser($_SESSION['user_id'], ['project' => $projectId]);
+$tasks = $isAdmin
+    ? $taskModel->getAllForAdmin(['project' => $projectId])
+    : $taskModel->getForUser($_SESSION['user_id'], ['project' => $projectId]);
 
 $activeTasks = [];
 $overdueTasks = [];
@@ -53,7 +54,7 @@ foreach ($tasks as $task) {
 <div class="dashboard-container">
     <header class="dashboard-header">
         <h1><?= htmlspecialchars($project['naam']) ?></h1>
-        <a href="tasks.php" class="btn-logout">Terug naar mijn taken</a>
+        <a href="<?= $backUrl ?>" class="btn-logout"><?= $isAdmin ? 'Terug naar takenoverzicht' : 'Terug naar mijn taken' ?></a>
     </header>
 
     <p class="no-items" style="margin-bottom: 1.5rem;">
@@ -61,7 +62,7 @@ foreach ($tasks as $task) {
     </p>
 
     <?php if (empty($tasks)): ?>
-        <p class="no-items">Je hebt geen taken binnen dit project.</p>
+        <p class="no-items"><?= $isAdmin ? 'Er zijn nog geen taken binnen dit project.' : 'Je hebt geen taken binnen dit project.' ?></p>
     <?php else: ?>
 
         <h2 style="margin-bottom: 0.75rem;">Actieve taken</h2>
