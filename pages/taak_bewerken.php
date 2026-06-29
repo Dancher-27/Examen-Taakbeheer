@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$isLocked) {
     <div class="auth-container edit-form">
         <form method="POST" novalidate>
             <?php if ($isLocked): ?>
-                <p class="urgency-tag <?= $isDone ? 'urgency-tag-done' : 'urgency-tag-overdue' ?>" style="display: block; margin-bottom: 1rem;">
+                <p class="urgency-tag <?= $isDone ? 'urgency-tag-done' : 'urgency-tag-overdue' ?>" style="display: block; white-space: normal; margin-bottom: 1rem;">
                     Vergrendeld — deze taak is <?= $isDone ? 'voltooid' : 'verlopen' ?> en kan niet meer bewerkt worden. Vraag een admin om de deadline te verlengen.
                 </p>
             <?php elseif (!$canEditAll): ?>
